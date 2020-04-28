@@ -1,14 +1,14 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import ChartView from '../views/ChartView.vue'
+import Home from '../views/Home.vue'
 
 Vue.use(VueRouter)
 
   const routes = [
   {
     path: '/',
-    name: 'ChartView',
-    component: ChartView
+    name: 'Home',
+    component: Home
   },
   {
     path: '/about',

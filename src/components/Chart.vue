@@ -12,7 +12,7 @@ import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 am4core.useTheme(am4themes_animated);
 
 export default {
-  name: 'ChartView',
+  name: 'Chart',
   data() {
     return {
       chartData: [{
@@ -27,11 +27,11 @@ export default {
       }, {
         "name": "Second",
         "children": [{
-          "name": "B1", "value": 135
+          "name": "A1", "value": 100
         }, {
-          "name": "B2", "value": 98
+          "name": "A2", "value": 60
         }, {
-          "name": "B3", "value": 56
+          "name": "A3", "value": 30
         }]
       }, {
         "name": "Third",
@@ -85,6 +85,7 @@ export default {
 
     // Add labels
     series.nodes.template.label.text = "{name}";
+    series.nodes.template.tooltipText = "{name}: [bold]{value}[/]";
     series.fontSize = 10;
     series.minRadius = 15;
     series.maxRadius = 40;
@@ -102,7 +103,7 @@ export default {
 
 <style scoped>
 .chart {
-  width: 100%;
-  height: 500px;
+  width: 70%;
+  height: 100%;
 }
 </style>

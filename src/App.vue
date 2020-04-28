@@ -1,12 +1,19 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">ChartView</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
+    <Header />
     <router-view/>
   </div>
 </template>
+
+<script>
+import Header from "./components/Header";
+export default {
+  name: "app",
+  components: {
+    Header: Header
+  }
+}
+</script>
 
 <style>
 #app {
@@ -15,18 +22,15 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  height: 100%;
 }
 
-#nav {
-  padding: 30px;
+body {
+  height: 100%;
+  background-color: rgb(244, 245, 247);
 }
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
+html, router-view {
+  height: 100%;
 }
 </style>
