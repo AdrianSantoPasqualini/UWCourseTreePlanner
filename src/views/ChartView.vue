@@ -1,50 +1,95 @@
 <template>
-  <div class="chart" ref="chartdiv">
+  <div class="chart" id="chartdiv">
   </div>
 </template>
 
 <script>
 import * as am4core from "@amcharts/amcharts4/core";
-import * as am4charts from "@amcharts/amcharts4/charts";
+//import * as am4charts from "@amcharts/amcharts4/charts";
+import * as am4plugins_forceDirected from "@amcharts/amcharts4/plugins/forceDirected"; 
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 
 am4core.useTheme(am4themes_animated);
 
 export default {
   name: 'ChartView',
-  mounted() {
-    let chart = am4core.create(this.$refs.chartdiv, am4charts.XYChart);
-
-    chart.paddingRight = 20;
-
-    let data = [];
-    let visits = 10;
-    for (let i = 1; i < 366; i++) {
-      visits += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 10);
-      data.push({ date: new Date(2018, 0, i), name: "name" + i, value: visits });
+  data() {
+    return {
+      chartData: [{
+        "name": "First",
+        "children": [{
+          "name": "A1", "value": 100
+        }, {
+          "name": "A2", "value": 60
+        }, {
+          "name": "A3", "value": 30
+        }]
+      }, {
+        "name": "Second",
+        "children": [{
+          "name": "B1", "value": 135
+        }, {
+          "name": "B2", "value": 98
+        }, {
+          "name": "B3", "value": 56
+        }]
+      }, {
+        "name": "Third",
+        "children": [{
+          "name": "C1", "value": 335
+        }, {
+          "name": "C2", "value": 148
+        }, {
+          "name": "C3", "value": 126
+        }, {
+          "name": "C4", "value": 26
+        }]
+      }, {
+        "name": "Fourth",
+        "children": [{
+          "name": "D1", "value": 415
+        }, {
+          "name": "D2", "value": 148
+        }, {
+          "name": "D3", "value": 89
+        }, {
+          "name": "D4", "value": 64
+        }, {
+          "name": "D5", "value": 16
+        }]
+      }, {
+        "name": "Fifth",
+        "children": [{
+          "name": "E1", "value": 687
+        }, {
+          "name": "E2", "value": 148
+        }]
+      }]
     }
+  },
 
-    chart.data = data;
+  mounted() {
+    // Create chart
+    var chart = am4core.create("chartdiv", am4plugins_forceDirected.ForceDirectedTree);
 
-    let dateAxis = chart.xAxes.push(new am4charts.DateAxis());
-    dateAxis.renderer.grid.template.location = 0;
+    // Create series
+    var series = chart.series.push(new am4plugins_forceDirected.ForceDirectedSeries())
 
-    let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-    valueAxis.tooltip.disabled = true;
-    valueAxis.renderer.minWidth = 35;
+    // Set data
+    series.data = this.chartData;
 
-    let series = chart.series.push(new am4charts.LineSeries());
-    series.dataFields.dateX = "date";
-    series.dataFields.valueY = "value";
+    // Set up data fields
+    series.dataFields.value = "value";
+    series.dataFields.name = "name";
+    series.dataFields.children = "children";
 
-    series.tooltipText = "{valueY.value}";
-    chart.cursor = new am4charts.XYCursor();
+    // Add labels
+    series.nodes.template.label.text = "{name}";
+    series.fontSize = 10;
+    series.minRadius = 15;
+    series.maxRadius = 40;
 
-    let scrollbarX = new am4charts.XYChartScrollbar();
-    scrollbarX.series.push(series);
-    chart.scrollbarX = scrollbarX;
-
-    this.chart = chart;
+    series.centerStrength = 0.5;
   },
 
   beforeDestroy() {
