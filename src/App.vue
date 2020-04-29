@@ -23,14 +23,13 @@ export default {
   text-align: center;
   color: #2c3e50;
   height: 100%;
+  display: flex;
+  flex-flow: column;
 }
 
-body {
+html, body {
   height: 100%;
+  margin: 0;
   background-color: rgb(244, 245, 247);
-}
-
-html, router-view {
-  height: 100%;
 }
 </style>
