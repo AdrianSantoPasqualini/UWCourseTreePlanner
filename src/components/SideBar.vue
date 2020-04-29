@@ -1,6 +1,6 @@
 <template>
     <div id="sidebar">
-        <DropDown class="dropdown"/>
+        <DropDown v-on:selection-change="changeSelection" class="dropdown"/>
     </div>
 </template>
 
@@ -10,6 +10,11 @@ export default {
     name: "SideBar",
     components: {
         DropDown: DropDown,
+    },
+    methods: {
+        changeSelection(courses) {
+            this.$emit('selection-change', courses);
+        }
     }
 }
 </script>

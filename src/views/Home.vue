@@ -1,6 +1,6 @@
 <template>
     <div class="homePanel">
-        <SideBar />
+        <SideBar v-on:selection-change="changeSelection"/>
         <Chart />
     </div>
 </template>
@@ -14,6 +14,16 @@ export default {
     components: {
         Chart: Chart,
         SideBar: SideBar,
+    },
+    data() {
+        return {
+            selectedCourses: []
+        }
+    },
+    methods: {
+        changeSelection(courses) {
+            this.selectedCourses = courses;
+        }
     }
 }
 </script>
