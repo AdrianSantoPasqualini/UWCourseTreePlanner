@@ -16,7 +16,7 @@ export default {
 
 <style scoped>
 .dropdown {
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 #sidebar {

@@ -1,7 +1,25 @@
 <template>
     <div class="dropdown-container">
-        <Multiselect v-model="value" :options="filteredCourseList" v-on:search-change="filterCourses"
-                        label="name" track-by="name">
+        <Multiselect
+            v-model="value"
+            :options="filteredCourseList"
+            v-on:search-change="filterCourses"
+            v-on:input="addCourses"
+            label="name" track-by="name"
+            :close-on-select="false"
+            :clear-on-select="false"
+            :multiple="true"
+            :internal-search="false"
+            :options-limit="5"
+            :hide-selected="true"
+            selectLabel=""
+            placeholder="Search for Courses">
+            <template slot="noOptions">Enter a course code (e.g. CS135, AFM101, etc.)</template>
+            <template slot="noResult">No unselected courses match your search.</template>
+            <template slot="option" slot-scope="props">
+                <div class="option__title"><strong>{{ props.option.name + ":"}}</strong></div>
+                <div class="option__small">{{ props.option.title }}</div>
+            </template>
         </Multiselect>
     </div>
         
@@ -31,12 +49,11 @@ export default {
 
     methods: {
         filterCourses(event) {
-            console.log(event);
             this.searchText = event.replace(/\s/g, "");
             this.filteredCourseList = this.courseList.get(this.searchText);
         },
         
-        addCourse(course) {
+        addCourses(course) {
             console.log(course);
         }
     },
