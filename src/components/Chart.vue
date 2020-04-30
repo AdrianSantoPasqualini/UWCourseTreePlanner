@@ -8,6 +8,7 @@
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4plugins_forceDirected from "@amcharts/amcharts4/plugins/forceDirected"; 
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
+import TrieSearch from "trie-search";
 import axios from "axios"
 am4core.useTheme(am4themes_animated);
 
@@ -17,7 +18,8 @@ export default {
   name: 'Chart',
   data() {
     return {
-      chartData: []
+      chartData: [],
+      displayedCourses: new TrieSearch(['name']),
     }
   },
   props: ["selectedCourses", "courseList"],
@@ -36,7 +38,7 @@ export default {
       series.dataFields.name = "name";
       series.dataFields.children = "children";
       series.dataFields.id = "name";
-      series.dataFields.linkWith = "link";
+      series.dataFields.linkWith = "links";
       // Add labels
       series.nodes.template.label.text = "[bold]{name}[/]";
       series.nodes.template.tooltipText = "{rawPrerequisites}";
@@ -70,63 +72,86 @@ export default {
     },
 
     async generateCourseTree(course) {
+      this.displayedCourses.addAll([course]);
       var newCourse = {
             name: course.subject + course.catalog_number,
             rawPrerequisites: "No Prerequisites",
             value: 1,
             courseData: course,
             children: [],
+            links: [],
       }
       await axios.get("https://api.uwaterloo.ca/v2/courses/"+course.subject+"/"+course.catalog_number+"/prerequisites.json?key="+UW_API_KEY)
       .then(async response => {
           if (response.data.data.prerequisites_parsed) {
             newCourse.rawPrerequisites = response.data.data.prerequisites;
-            newCourse.children = newCourse.children.concat(await this.generatePrereqChildrenFromList(response.data.data.prerequisites_parsed));
+            var prereqs = await this.generatePrereqChildrenFromList(response.data.data.prerequisites_parsed);
+            newCourse.children = newCourse.children.concat(prereqs.prereqChildren);
+            newCourse.links = newCourse.links.concat(prereqs.prereqLinks);
           }          
       });
       return newCourse;
     },
 
     async generatePrereqChildrenFromList(prerequisites_parsed) {
-      var prereqChildren = [];
-
+      var linksAndChildren = {
+        prereqChildren: [],
+        prereqLinks: [],
+      }
       if (typeof prerequisites_parsed[0] === "number") {
-        return this.generatePrereqChildrenSingleTerm(prerequisites_parsed);
+        return await this.generatePrereqChildrenSingleTerm(prerequisites_parsed);
       } else {
         for (const prereq of prerequisites_parsed) {
-          prereqChildren = [...prereqChildren, await this.generatePrereqChildrenSingleTerm(prereq)];
+          const prereqs = await this.generatePrereqChildrenSingleTerm(prereq)
+          linksAndChildren.prereqChildren = linksAndChildren.prereqChildren.concat(prereqs.prereqChildren);
+          linksAndChildren.prereqLinks = linksAndChildren.prereqLinks.concat(prereqs.prereqLinks);
         }
       }
-      return prereqChildren;
+      return linksAndChildren;
     },
 
     async generatePrereqChildrenSingleTerm(prereqTerm) {
+      var linksAndChildren = {
+        prereqChildren: [],
+        prereqLinks: [],
+      }
       if (typeof prereqTerm === "string") {
-        return await this.generateCourseTree(this.courseList.get(prereqTerm)[0])
-        .catch(err => console.log("Couldnt find course: ", err));
+        console.log(this.displayedCourses.get(prereqTerm));
+        if (!this.displayedCourses.get(prereqTerm).length) {
+          var newChild = await this.generateCourseTree(this.courseList.get(prereqTerm)[0])
+          .catch(err => console.log("Couldnt find course: ", err));
+          linksAndChildren.prereqChildren.push(newChild);
+        } else {
+          linksAndChildren.prereqLinks.push(prereqTerm);
+        }
       } else {
         let courseOptions = {
           name: this.numberToString(prereqTerm[0]),
           rawPrerequisites: "Choose one of these courses:",
           value: 1,
-          children: []
+          children: [],
+          links: []
         }
         for (let i = 1; i < prereqTerm.length; i++) {
-          const newChild = await this.generatePrereqChildrenSingleTerm(prereqTerm[i])
-          courseOptions.children = [...courseOptions.children, newChild];
+          const prereqs = await this.generatePrereqChildrenSingleTerm(prereqTerm[i])
+          courseOptions.children = courseOptions.children.concat(prereqs.prereqChildren);
+          courseOptions.links = courseOptions.links.concat(prereqs.prereqLinks);
         }
-        return courseOptions;
+        linksAndChildren.prereqChildren.push(courseOptions);
       }
+      return linksAndChildren;
     },
   },
 
   watch: {
     selectedCourses: async function(newCourses) {
+      this.displayedCourses = new TrieSearch(['name']);
       let newChartData = [];
       for (const course of newCourses) {
           var newCourse = await this.generateCourseTree(course);
-          newChartData = [...newChartData, newCourse]
+          newChartData.push(newCourse);
       }
+      console.log("END", this.displayedCourses.get("p"));
       this.chartData = newChartData;
       await this.updateChart();
       
