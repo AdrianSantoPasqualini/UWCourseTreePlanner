@@ -1,6 +1,6 @@
 <template>
     <div id="sidebar">
-        <DropDown v-on:selection-change="changeSelection" class="dropdown"/>
+        <DropDown v-on:selection-change="changeSelection" v-bind:courseList="courseList" class="dropdown"/>
     </div>
 </template>
 
@@ -11,6 +11,7 @@ export default {
     components: {
         DropDown: DropDown,
     },
+    props: ["courseList"],
     methods: {
         changeSelection(courses) {
             this.$emit('selection-change', courses);
