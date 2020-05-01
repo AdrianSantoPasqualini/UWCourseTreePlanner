@@ -1,17 +1,24 @@
 <template>
     <div id="sidebar">
         <DropDown v-on:selection-change="changeSelection" v-bind:courseList="courseList" class="dropdown"/>
+        <CourseChoiceBox class="choice-box"
+            v-for="choice in courseOptions"
+            v-bind:key="choice.amount"
+            v-bind:choice="choice" />
     </div>
 </template>
 
 <script>
 import DropDown from "./DropDown";
+import CourseChoiceBox from '../components/CourseChoiceBox';
+
 export default {
     name: "SideBar",
     components: {
         DropDown: DropDown,
+        CourseChoiceBox: CourseChoiceBox,
     },
-    props: ["courseList"],
+    props: ["courseList", "courseOptions"],
     methods: {
         changeSelection(courses) {
             this.$emit('selection-change', courses);
@@ -22,9 +29,13 @@ export default {
 
 <style scoped>
 .dropdown {
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+.choice-box {
     margin-top: 5px;
 }
-
 #sidebar {
     background-color: #fff;
     width: 30%;
