@@ -18,7 +18,7 @@ export default {
       displayedCourses: new TrieSearch(['name']),
     }
   },
-  props: ["chartData", "courseList"],
+  props: ["courseData"],
   
   methods: {
     
@@ -46,9 +46,9 @@ export default {
   },
 
   watch: {
+    /*
     chartData: async function(newCourses) {
       console.log(newCourses)
-      /*
       this.displayedCourses = new TrieSearch(['name']);
       let newChartData = [];
       for (const course of newCourses) {
@@ -58,10 +58,9 @@ export default {
       console.log("END", this.displayedCourses.get("p"));
       this.chartData = newChartData;
       await this.updateChart();
-      
       return newCourses;
-      */
     }
+    */
   },
   
   mounted() {

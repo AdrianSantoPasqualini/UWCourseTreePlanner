@@ -2,16 +2,16 @@
     <div class="outer-choice-box">
         <div class="choice-title">
             <strong>
-                {{choice.name}}
+                {{choice.parent + ": "}}
             </strong>
-            {{ " - Select " + choice.amount + " of the following prerequisite courses:"}}
+            {{"Select " + choice.options[0] + " of the following prerequisites"}}
         </div>
         <div class="inner-choice-box">
             <button class="choice-item" 
-                v-for="option in choice.options" :key="option.name"
+                v-for="option in choice.options.slice(1)" :key="option.name"
                 v-on:click="toggleSelected(option)"
-                v-bind:class="{'selected':option.selected}">
-                {{option.name}}    
+                v-bind:class="{'selected':selected.includes(option)}">
+                {{option}}
             </button>
                 
         </div>
@@ -24,26 +24,29 @@ export default {
     props: ["choice"],
     data() {
         return {
-            totalSelected: 0,
+            selected: []
         }
     },
     methods: {
         toggleSelected(option) {
-            option.selected = !option.selected;
-            if (option.selected) {
-                this.totalSelected++;
+            var change = {
+                parent: this.choice.parent,
+                unselected: 0,
+                selected: 0,
+            }
+            if (this.selected.includes(option)) {
+                this.selected = this.selected.filter(item => {
+                    return item !== option;
+                })
+                change.unselected = option;
             } else {
-                this.totalSelected--;
+                if (this.selected.length + 1 > this.choice.options[0]) {
+                    change.unselected = this.selected.pop();
+                }
+                change.selected = option;
+                this.selected.push(option);
             }
-            if (this.totalSelected > this.choice.amount) {
-                this.choice.options.some((currOption) => {
-                    if (currOption.selected && currOption.name !== option.name) {
-                        currOption.selected = false;
-                        this.totalSelected--;
-                    }
-                    return this.totalSelected <= this.choice.amount;
-                });
-            }
+            this.$emit('choice-made', change)
         }
     }
 }

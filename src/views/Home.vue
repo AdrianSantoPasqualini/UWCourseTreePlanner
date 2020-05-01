@@ -1,7 +1,7 @@
 <template>
     <div class="homePanel">
-        <SideBar v-on:selection-change="changeSelection" v-bind:courseOptions="courseOptions" v-bind:courseList="courseList"/>
-        <Chart v-bind:selectedCourses="selectedCourses" v-bind:courseList="courseList"/>
+        <SideBar v-bind:courseList="courseList"/>
+        <Chart v-bind:chartData="{}"/>
     </div>
 </template>
 
@@ -20,79 +20,8 @@ export default {
     },
     data() {
         return {
-            selectedCourses: [],
             courseList: new TrieSearch(),
-            courseOptions: [],
-            seenCourses: new TrieSearch(['name']),
-            courseData: [],
         }
-    },
-    methods: {
-        async changeSelection(newCourses) {
-            this.courseData = [];
-            for (const course of newCourses) {
-                await this.generateCourseTree(course);
-            }
-            console.log(this.courseOptions)
-        },
-
-        async generateCourseTree(course) {
-            var newCourse = {
-                    name: course.subject + course.catalog_number,
-                    rawPrerequisites: "No Prerequisites",
-                    parsedPrerequisites: [],
-                    value: 1,
-                    courseInfo: course,
-            }
-            this.seenCourses.addAll([newCourse]);
-            await axios.get("https://api.uwaterloo.ca/v2/courses/"+course.subject+"/"+course.catalog_number+"/prerequisites.json?key="+UW_API_KEY)
-            .then(async response => {
-                if (response.data.data.prerequisites_parsed) {
-                    newCourse.rawPrerequisites = response.data.data.prerequisites;
-                    newCourse.parsedPrerequisites = response.data.data.prerequisites_parsed;
-                    await this.generatePrereqChildrenFromList(response.data.data.prerequisites_parsed, course.subject + course.catalog_number);
-                }
-                this.courseData.push(newCourse);
-            });
-            return newCourse;
-        },
-
-        async generatePrereqChildrenFromList(prerequisites_parsed, parent) {
-            if (typeof prerequisites_parsed[0] === "number") {
-                const newChoice = {
-                    name: parent,
-                    amount: prerequisites_parsed[0],
-                    options: prerequisites_parsed.slice(1).map(course => {
-                        return {selected: false, name: course}})
-                }
-                this.courseOptions.push(newChoice);
-                await this.generatePrereqChildrenSingleTerm(prerequisites_parsed, parent);
-            } else {
-                for (const prereq of prerequisites_parsed) {
-                    await this.generatePrereqChildrenSingleTerm(prereq, parent);
-                }
-            }
-        },
-
-        async generatePrereqChildrenSingleTerm(prereqTerm, parent) {
-            if (typeof prereqTerm === "string") {
-                if (!this.seenCourses.get(prereqTerm).length) {
-                    await this.generateCourseTree(this.courseList.get(prereqTerm)[0])
-                    .catch(err => console.log("Couldnt find course: ", err));
-                }
-            } else {
-                const newChoice = {
-                    name: parent,
-                    amount: prereqTerm[0],
-                    options: prereqTerm.slice(1).map(course => {
-                        return {selected: false, name: course}})
-                }
-                this.courseOptions.push(newChoice);
-                for (let i = 1; i < prereqTerm.length; i++) {
-                    await this.generatePrereqChildrenSingleTerm(prereqTerm[i], parent)
-                }
-            }
-        },
     },
 
     created() {
