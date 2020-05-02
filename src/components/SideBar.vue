@@ -46,14 +46,13 @@ export default {
         async changeSelection(newCourses) {
             this.courseData = [];
             for (const course of newCourses) {
-                await this.generateCourseTree(course, "User");
+                await this.generateCourseData(course, "User");
             }
-            console.log("FINAL", this.courseData)
         },
 
         async updateChosenCourses(change) {
             if (change.selected && !this.courseTrie.get(change.selected).length) {
-                await this.generateCourseTree(this.courseList.get(change.selected)[0], change.parent);
+                await this.generateCourseData(this.courseList.get(change.selected)[0], change.parent);
             } else if (change.selected && this.chosenCourses.get(change.selected).length > 0) {
                 this.chosenCourses.get(change.selected)[0].chosenBy++;
                 this.chosenCourses.get(change.selected)[0].choosers.push(change.parent);
@@ -105,7 +104,7 @@ export default {
             }
         },
 
-        async generateCourseTree(course, parent) {
+        async generateCourseData(course, parent) {
             var newCourse = {
                     name: course.subject + course.catalog_number,
                     rawPrerequisites: "No Prerequisites",
@@ -140,7 +139,7 @@ export default {
                 for (const prereqCourse of newCourse.parsedPrerequisites) {
                     if (typeof prereqCourse === "string") {
                         if (!this.courseTrie.get(prereqCourse).length) {
-                            await this.generateCourseTree(this.courseList.get(prereqCourse)[0], course.name);
+                            await this.generateCourseData(this.courseList.get(prereqCourse)[0], course.name);
                         } else {
                             this.chosenCourses.get(prereqCourse)[0].choosers.push(course.name);
                             this.chosenCourses.get(prereqCourse)[0].chosenBy++;

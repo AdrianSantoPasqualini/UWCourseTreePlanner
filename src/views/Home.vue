@@ -1,7 +1,7 @@
 <template>
     <div class="homePanel">
         <SideBar v-on:generate-tree="buildChartData" v-bind:courseList="courseList"/>
-        <Chart v-bind:chartData="{}"/>
+        <Chart v-bind:chartData="chartData"/>
     </div>
 </template>
 
@@ -22,14 +22,85 @@ export default {
     data() {
         return {
             courseList: new TrieSearch(),
+            courseData: [],
+            chosenCourses: new TrieSearch(['courseInfo', 'name']),
+            chartData: [],
+            displayedCourses: new TrieSearch(['name']),
         }
     },
 
     methods: {
         buildChartData(courseData, chosenCourses) {
-            console.log(courseData);
-            console.log(chosenCourses)
-        }
+            this.chartData = [];
+            this.displayedCourses = new TrieSearch(['name']);
+            this.courseData = courseData;
+            this.chosenCourses = chosenCourses;
+            for (var course of this.courseData) {
+                const chosen = this.chosenCourses.get(course.name);
+                if (chosen.length > 0 && chosen[0].choosers.includes("User")) {
+                    this.chartData.push(this.generateCourseTree(course, course.name));
+                }
+            }
+        },
+
+        generateCourseTree(course, parent) {
+            this.displayedCourses.addAll([course]);
+            var newCourse = {
+                    name: course.name,
+                    rawPrerequisites: course.rawPrerequisites,
+                    value: 1,
+                    courseData: course,
+                    children: [],
+                    links: [],
+            }
+            if (course.parsedPrerequisites && course.parsedPrerequisites.length > 0) {
+                var prereqs = this.generatePrereqChildrenFromList(course.parsedPrerequisites, parent);
+                newCourse.children = newCourse.children.concat(prereqs.prereqChildren);
+                newCourse.links = newCourse.links.concat(prereqs.prereqLinks);
+            }
+            return newCourse;
+        },
+
+        generatePrereqChildrenFromList(prerequisites_parsed, parent) {
+            var linksAndChildren = {
+                prereqChildren: [],
+                prereqLinks: [],
+            }
+            if (typeof prerequisites_parsed[0] === "number") {
+                return this.generatePrereqChildrenSingleTerm(prerequisites_parsed, parent);
+            } else {
+                for (const prereq of prerequisites_parsed) {
+                    const prereqs = this.generatePrereqChildrenSingleTerm(prereq, parent)
+                    linksAndChildren.prereqChildren = linksAndChildren.prereqChildren.concat(prereqs.prereqChildren);
+                    linksAndChildren.prereqLinks = linksAndChildren.prereqLinks.concat(prereqs.prereqLinks);
+                }
+            }
+            return linksAndChildren;
+        },
+        generatePrereqChildrenSingleTerm(prereqTerm, parent) {
+            var linksAndChildren = {
+                prereqChildren: [],
+                prereqLinks: [],
+            }
+            if (typeof prereqTerm === "string") {
+                if (!this.displayedCourses.get(prereqTerm).length) {
+                    var newChild = this.generateCourseTree(this.chosenCourses.get(prereqTerm)[0].courseInfo, prereqTerm);
+                    linksAndChildren.prereqChildren.push(newChild);
+                } else {
+                    linksAndChildren.prereqLinks.push(prereqTerm);
+                }
+            } else {
+                for (let i = 1; i < prereqTerm.length; i++) {
+                    const chosen = this.chosenCourses.get(prereqTerm[i]);
+                    if (chosen.length > 0 && chosen[0].choosers.includes(parent)) {
+                        const prereqs = this.generatePrereqChildrenSingleTerm(prereqTerm[i], parent);
+                        linksAndChildren.prereqChildren = linksAndChildren.prereqChildren.concat(prereqs.prereqChildren);
+                        linksAndChildren.prereqLinks = linksAndChildren.prereqLinks.concat(prereqs.prereqLinks);
+                    }
+                }
+            }
+            return linksAndChildren;
+        },
     },
 
     created() {
