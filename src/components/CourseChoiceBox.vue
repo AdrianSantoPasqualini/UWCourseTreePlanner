@@ -13,7 +13,6 @@
                 v-bind:class="{'selected':selected.includes(option)}">
                 {{option}}
             </button>
-                
         </div>
     </div>
 </template>

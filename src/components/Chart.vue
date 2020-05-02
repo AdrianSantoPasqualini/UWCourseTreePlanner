@@ -18,7 +18,7 @@ export default {
       displayedCourses: new TrieSearch(['name']),
     }
   },
-  props: ["courseData"],
+  props: ["courseData", "chosenCourses"],
   
   methods: {
     

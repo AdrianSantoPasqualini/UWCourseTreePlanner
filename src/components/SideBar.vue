@@ -15,6 +15,9 @@
                 </div>
             </div>
         </div>
+        <button class="submitChoices" v-on:click="$emit('generate-tree', courseData, chosenCourses)">
+            Generate Prequisite Tree
+        </button>
     </div>
 </template>
 
@@ -54,11 +57,32 @@ export default {
             } else if (change.selected && this.chosenCourses.get(change.selected).length > 0) {
                 this.chosenCourses.get(change.selected)[0].chosenBy++;
                 this.chosenCourses.get(change.selected)[0].choosers.push(change.parent);
+                if (this.chosenCourses.get(change.selected)[0].chosenBy === 1) {
+                    this.reselectChildren(change.selected, this.chosenCourses.get(change.selected)[0].courseInfo.parsedPrerequisites);
+                }
             }
             if (change.unselected && this.chosenCourses.get(change.unselected).length > 0) {
                 this.chosenCourses.get(change.unselected)[0].chosenBy--;
+                this.chosenCourses.get(change.unselected)[0].choosers = this.chosenCourses.get(change.unselected)[0].choosers.filter(chooser => {
+                            return chooser !== change.parent;
+                });
                 if (this.chosenCourses.get(change.unselected)[0].chosenBy <= 0) {
                     this.deselectChildren(change.unselected, this.chosenCourses.get(change.unselected)[0].courseInfo.parsedPrerequisites);
+                }
+            }
+        },
+
+        reselectChildren(parent, prereqs) {
+            if (typeof prereqs[0] === "number") {
+                return;
+            }
+            for (const term of prereqs) {
+                if (typeof term === "string") {
+                    this.chosenCourses.get(term)[0].chosenBy++;
+                    this.chosenCourses.get(term)[0].choosers.push(parent);
+                    if (this.chosenCourses.get(term)[0].chosenBy <= 0) {
+                        this.reselectChildren(term, this.chosenCourses.get(term)[0].courseInfo.parsedPrerequisites);
+                    }
                 }
             }
         },
@@ -71,7 +95,6 @@ export default {
                         this.chosenCourses.get(term)[0].choosers = this.chosenCourses.get(term)[0].choosers.filter(chooser => {
                             return chooser !== parent;
                         });
-                        console.log("here")
                         if (this.chosenCourses.get(term)[0].chosenBy <= 0) {
                             this.deselectChildren(term, this.chosenCourses.get(term)[0].courseInfo.parsedPrerequisites);
                         }
@@ -100,6 +123,9 @@ export default {
                 }
                 this.courseData.push(newCourse);
             });
+            if (Array.isArray(newCourse.parsedPrerequisites[0]) && newCourse.parsedPrerequisites.length === 1) {
+                newCourse.parsedPrerequisites = newCourse.parsedPrerequisites[0];
+            }
             if (newCourse.parsedPrerequisites[0] === 1) {
                 var newPrereqs = [1];
                 for (const prereqCourse of newCourse.parsedPrerequisites.slice(1)) {
@@ -114,7 +140,10 @@ export default {
                 for (const prereqCourse of newCourse.parsedPrerequisites) {
                     if (typeof prereqCourse === "string") {
                         if (!this.courseTrie.get(prereqCourse).length) {
-                            await this.generateCourseTree(this.courseList.get(prereqCourse)[0], parent);
+                            await this.generateCourseTree(this.courseList.get(prereqCourse)[0], course.name);
+                        } else {
+                            this.chosenCourses.get(prereqCourse)[0].choosers.push(course.name);
+                            this.chosenCourses.get(prereqCourse)[0].chosenBy++;
                         }
                     }
                 }

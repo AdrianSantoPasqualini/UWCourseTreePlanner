@@ -1,6 +1,6 @@
 <template>
     <div class="homePanel">
-        <SideBar v-bind:courseList="courseList"/>
+        <SideBar v-on:generate-tree="buildChartData" v-bind:courseList="courseList"/>
         <Chart v-bind:chartData="{}"/>
     </div>
 </template>
@@ -18,9 +18,17 @@ export default {
         Chart: Chart,
         SideBar: SideBar,
     },
+
     data() {
         return {
             courseList: new TrieSearch(),
+        }
+    },
+
+    methods: {
+        buildChartData(courseData, chosenCourses) {
+            console.log(courseData);
+            console.log(chosenCourses)
         }
     },
 
