@@ -31,6 +31,12 @@ export default {
       series.dataFields.name = "name";
       series.dataFields.children = "children";
       series.dataFields.id = "name";
+      series.dataFields.color = "color";
+      series.colors.list = [
+        am4core.color("#F42B03"),
+        am4core.color("#EC7505"),
+        am4core.color("#E89005")
+      ];
       series.manyBodyStrength = -25;
       //series.centerStrength = 0;
       //series.links.template.strength = 10

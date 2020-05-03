@@ -9,6 +9,7 @@
 import Chart from '../components/Chart';
 import SideBar from '../components/SideBar';
 import TrieSearch from "trie-search";
+import * as am4core from "@amcharts/amcharts4/core";
 import axios from "axios"
 const UW_API_KEY = "ad7c8daa89f123ff2f7ee0c0a4678694";
 
@@ -31,6 +32,20 @@ export default {
     },
 
     methods: {
+        levelToColor(level) {
+            level = level % 4
+            switch (level) {
+                case 1:
+                    return am4core.color("#F42B03");
+                case 2:
+                    return am4core.color("#D84A05");
+                case 3:
+                    return am4core.color("#EC7505");
+                case 0:
+                    return am4core.color("#E89005");
+            }
+        },
+
         buildChartData(courseData, chosenCourses) {
             this.chartData = [];
             this.displayedCourses = new TrieSearch(['name']);
@@ -53,6 +68,7 @@ export default {
                     children: [],
                     links: [],
                     level: level,
+                    color: this.levelToColor(level)
             }
             if (this.levelData[level]) {
                 this.levelData[level]++;
