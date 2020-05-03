@@ -18,14 +18,11 @@ export default {
       displayedCourses: new TrieSearch(['name']),
     }
   },
-  props: ["chartData", "chosenCourses"],
+  props: ["chartData", "chosenCourses", "levelData"],
   
   methods: {
     
     updateChart() {
-      if (this.chart) {
-        this.chart.dispose();
-      }
       var chart = am4core.create("chartdiv", am4plugins_forceDirected.ForceDirectedTree);
       var series = chart.series.push(new am4plugins_forceDirected.ForceDirectedSeries());
       series.data = this.chartData;
@@ -34,14 +31,25 @@ export default {
       series.dataFields.name = "name";
       series.dataFields.children = "children";
       series.dataFields.id = "name";
-      series.dataFields.linkWith = "links";
+      series.manyBodyStrength = -25;
+      //series.centerStrength = 0;
+      //series.links.template.strength = 10
+      //series.dataFields.linkWith = "links";
+      //series.dataFields.fixed = "fixed";
+      //series.nodes.template.propertyFields.x = "x";
+      //series.nodes.template.propertyFields.y = "y";
       // Add labels
       series.nodes.template.label.text = "[bold]{name}[/]";
       series.nodes.template.tooltipText = "{rawPrerequisites}";
-      series.fontSize = 10;
-      series.minRadius = 15;
-      series.maxRadius = 40;
-      series.centerStrength = 0.5;
+      series.nodes.template.adapter.add("fontSize", function(curr, target) {
+        if (target.dataItem.value < 10) {
+          return 10;
+        }
+        return target.dataItem.value;
+      });
+      series.minRadius = 30;
+      series.maxRadius = 60;
+      series.maxLevels = 3;
     },
   },
 

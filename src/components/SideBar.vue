@@ -1,6 +1,9 @@
 <template>
     <div id="sidebar">
-        <DropDown v-on:selection-change="changeSelection" v-bind:courseList="courseList" class="dropdown"/>
+        <DropDown
+            v-on:add-selection="addSelection"
+            v-on:remove-selection="removeSelection"
+            v-bind:courseList="courseList" class="dropdown"/>
         <div v-for="course in courseData" v-bind:key="course.id">
             <div v-if="chosenCourses.get(course.name)[0].chosenBy > 0">
                 <CourseChoiceBox class="choice-box"
@@ -43,11 +46,11 @@ export default {
         }
     },
     methods: {
-        async changeSelection(newCourses) {
-            this.courseData = [];
-            for (const course of newCourses) {
-                await this.generateCourseData(course, "User");
-            }
+        async addSelection(course) {
+            this.updateChosenCourses({parent: "User", selected: course.name, unselected: 0})
+        },
+        async removeSelection(course) {
+            this.updateChosenCourses({parent: "User", selected: 0, unselected: course.name})
         },
 
         async updateChosenCourses(change) {
@@ -125,7 +128,11 @@ export default {
             if (Array.isArray(newCourse.parsedPrerequisites[0]) && newCourse.parsedPrerequisites.length === 1) {
                 newCourse.parsedPrerequisites = newCourse.parsedPrerequisites[0];
             }
-            if (newCourse.parsedPrerequisites[0] === 1) {
+            if (newCourse.parsedPrerequisites[0] === 1 && newCourse.parsedPrerequisites.length === 2) {
+                if (Array.isArray(newCourse.parsedPrerequisites[1])) {
+                    newCourse.parsedPrerequisites = [1].concat(newCourse.parsedPrerequisites[1]);
+                }
+            } else if (newCourse.parsedPrerequisites[0] === 1) {
                 var newPrereqs = [1];
                 for (const prereqCourse of newCourse.parsedPrerequisites.slice(1)) {
                     if (Array.isArray(prereqCourse) && prereqCourse[0] === 1) {

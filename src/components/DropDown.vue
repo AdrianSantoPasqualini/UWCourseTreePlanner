@@ -4,7 +4,8 @@
             v-model="value"
             :options="filteredCourseList"
             v-on:search-change="filterCourses"
-            v-on:input="changeSelection"
+            v-on:select="addSelection"
+            v-on:remove="removeSelection"
             label="name" track-by="name"
             :close-on-select="false"
             :clear-on-select="false"
@@ -47,8 +48,11 @@ export default {
             this.searchText = event.replace(/\s/g, "");
             this.filteredCourseList = this.courseList.get(this.searchText);
         },
-        changeSelection(courses) {
-            this.$emit('selection-change', courses);
+        addSelection(course) {
+            this.$emit('add-selection', course);
+        },
+        removeSelection(course) {
+            this.$emit('remove-selection', course);
         }
     },
 }

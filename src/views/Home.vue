@@ -26,6 +26,7 @@ export default {
             chosenCourses: new TrieSearch(['courseInfo', 'name']),
             chartData: [],
             displayedCourses: new TrieSearch(['name']),
+            levelData: [],
         }
     },
 
@@ -38,62 +39,69 @@ export default {
             for (var course of this.courseData) {
                 const chosen = this.chosenCourses.get(course.name);
                 if (chosen.length > 0 && chosen[0].choosers.includes("User")) {
-                    this.chartData.push(this.generateCourseTree(course, course.name));
+                    this.chartData.push(this.generateCourseTree(course, course.name, 1));
                 }
             }
         },
 
-        generateCourseTree(course, parent) {
+        generateCourseTree(course, parent, level) {
             this.displayedCourses.addAll([course]);
             var newCourse = {
                     name: course.name,
                     rawPrerequisites: course.rawPrerequisites,
-                    value: 1,
                     courseData: course,
                     children: [],
                     links: [],
+                    level: level,
+            }
+            if (this.levelData[level]) {
+                this.levelData[level]++;
+            } else {
+                this.levelData[level] = 1;
             }
             if (course.parsedPrerequisites && course.parsedPrerequisites.length > 0) {
-                var prereqs = this.generatePrereqChildrenFromList(course.parsedPrerequisites, parent);
+                var prereqs = this.generatePrereqChildrenFromList(course.parsedPrerequisites, parent, level+1);
                 newCourse.children = newCourse.children.concat(prereqs.prereqChildren);
                 newCourse.links = newCourse.links.concat(prereqs.prereqLinks);
+            } else {
+                newCourse.value = 5;
             }
             return newCourse;
         },
 
-        generatePrereqChildrenFromList(prerequisites_parsed, parent) {
+        generatePrereqChildrenFromList(prerequisites_parsed, parent, level) {
             var linksAndChildren = {
                 prereqChildren: [],
                 prereqLinks: [],
             }
             if (typeof prerequisites_parsed[0] === "number") {
-                return this.generatePrereqChildrenSingleTerm(prerequisites_parsed, parent);
+                return this.generatePrereqChildrenSingleTerm(prerequisites_parsed, parent, level);
             } else {
                 for (const prereq of prerequisites_parsed) {
-                    const prereqs = this.generatePrereqChildrenSingleTerm(prereq, parent)
+                    const prereqs = this.generatePrereqChildrenSingleTerm(prereq, parent, level)
                     linksAndChildren.prereqChildren = linksAndChildren.prereqChildren.concat(prereqs.prereqChildren);
                     linksAndChildren.prereqLinks = linksAndChildren.prereqLinks.concat(prereqs.prereqLinks);
                 }
             }
             return linksAndChildren;
         },
-        generatePrereqChildrenSingleTerm(prereqTerm, parent) {
+        generatePrereqChildrenSingleTerm(prereqTerm, parent, level) {
             var linksAndChildren = {
                 prereqChildren: [],
                 prereqLinks: [],
             }
             if (typeof prereqTerm === "string") {
-                if (!this.displayedCourses.get(prereqTerm).length) {
-                    var newChild = this.generateCourseTree(this.chosenCourses.get(prereqTerm)[0].courseInfo, prereqTerm);
+                //if (!this.displayedCourses.get(prereqTerm).length) {
+                    var newChild = this.generateCourseTree(this.chosenCourses.get(prereqTerm)[0].courseInfo, prereqTerm, level);
                     linksAndChildren.prereqChildren.push(newChild);
-                } else {
-                    linksAndChildren.prereqLinks.push(prereqTerm);
-                }
+                //} else {
+                  //  linksAndChildren.prereqChildren.push(prereqTerm);
+                //}
             } else {
                 for (let i = 1; i < prereqTerm.length; i++) {
                     const chosen = this.chosenCourses.get(prereqTerm[i]);
                     if (chosen.length > 0 && chosen[0].choosers.includes(parent)) {
-                        const prereqs = this.generatePrereqChildrenSingleTerm(prereqTerm[i], parent);
+                        const prereqs = this.generatePrereqChildrenSingleTerm(prereqTerm[i], parent, level);
                         linksAndChildren.prereqChildren = linksAndChildren.prereqChildren.concat(prereqs.prereqChildren);
                         linksAndChildren.prereqLinks = linksAndChildren.prereqLinks.concat(prereqs.prereqLinks);
                     }
