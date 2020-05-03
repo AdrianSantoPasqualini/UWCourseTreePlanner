@@ -1,6 +1,6 @@
 <template>
     <div class="homePanel">
-        <SideBar v-on:generate-tree="buildChartData" v-bind:courseList="courseList"/>
+        <SideBar id="sidebar" v-on:generate-tree="buildChartData" v-bind:courseList="courseList"/>
         <Chart v-bind:chartData="chartData"/>
     </div>
 </template>
@@ -156,4 +156,14 @@ export default {
     height: 100%;
     display: flex;
 }
+#sidebar {
+    background-color: #fff;
+    width: 100%;
+    height: 99%;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 2px 2px #ededed;
+    overflow-y: scroll;
+    margin: 0.5%;
+}
+
 </style>

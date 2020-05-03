@@ -1,14 +1,11 @@
 <template>
     <div class="outer-choice-box">
         <div class="choice-title">
-            <strong>
-                {{choice.parent + ": "}}
-            </strong>
-            {{"Select " + choice.options[0] + " of the following prerequisites"}}
+            {{choice.amount + "of:"}}
         </div>
         <div class="inner-choice-box">
             <button class="choice-item" 
-                v-for="option in choice.options.slice(1)" :key="option.name"
+                v-for="option in choice.options" :key="option.name"
                 v-on:click="toggleSelected(option)"
                 v-bind:class="{'selected':selected.includes(option)}">
                 {{option}}
@@ -39,7 +36,7 @@ export default {
                 })
                 change.unselected = option;
             } else {
-                if (this.selected.length + 1 > this.choice.options[0]) {
+                if (this.selected.length + 1 > this.choice.amount) {
                     change.unselected = this.selected.pop();
                 }
                 change.selected = option;
@@ -56,13 +53,13 @@ export default {
     border-radius: 0.5rem;
     border: 1px solid #e6e6e6;
     display: flex;
-    flex-direction: column;
     padding-top: 5px;
     padding-bottom: 5px;
 }
 .inner-choice-box {
     display: flex;
     flex-wrap: wrap;
+    width: 100%;
 }
 .choice-item {
     border-radius: 0.5rem;

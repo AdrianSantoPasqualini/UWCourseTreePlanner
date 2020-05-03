@@ -1,32 +1,41 @@
 <template>
-    <div id="sidebar">
-        <DropDown
-            v-on:add-selection="addSelection"
-            v-on:remove-selection="removeSelection"
-            v-bind:courseList="courseList" class="dropdown"/>
-        <div v-for="course in courseData" v-bind:key="course.id">
-            <div v-if="chosenCourses.get(course.name)[0].chosenBy > 0">
-                <CourseChoiceBox class="choice-box"
-                        v-if="typeof course.parsedPrerequisites[0] === 'number'"
-                        v-on:choice-made="updateChosenCourses"
-                        v-bind:choice="{parent: course.name, options: course.parsedPrerequisites}"/>
-                <div v-else v-for="prereq in course.parsedPrerequisites" v-bind:key="course.id + prereq">
+    <div>
+        <div class="sidebar-container">
+            <DropDown
+                v-on:add-selection="addSelection"
+                v-on:remove-selection="removeSelection"
+                v-bind:courseList="courseList" class="dropdown"/>
+            <!--
+            <div v-for="course in courseData" v-bind:key="course.id">
+                <div v-if="chosenCourses.get(course.name)[0].chosenBy > 0">
                     <CourseChoiceBox class="choice-box"
-                        v-if="Array.isArray(prereq)"
-                        v-on:choice-made="updateChosenCourses"
-                        v-bind:choice="{parent: course.name, options: prereq}"/>
+                            v-if="typeof course.parsedPrerequisites[0] === 'number'"
+                            v-on:choice-made="updateChosenCourses"
+                            v-bind:choice="{parent: course.name, options: course.parsedPrerequisites}"/>
+                    <div v-else v-for="prereq in course.parsedPrerequisites" v-bind:key="course.id + prereq">
+                        <CourseChoiceBox class="choice-box"
+                            v-if="Array.isArray(prereq)"
+                            v-on:choice-made="updateChosenCourses"
+                            v-bind:choice="{parent: course.name, options: prereq}"/>
+                    </div>
                 </div>
             </div>
+            -->
+            <div class="course-choices">
+                    <CourseBox class="course-box"
+                        v-for="course in this.courseBoxList" v-bind:key="course.id"
+                        v-on:choice-made="updateChosenCourses" v-bind:course="course" />
+            </div>
+            <button class="submitChoices" v-on:click="$emit('generate-tree', courseData, chosenCourses)">
+                Generate Prequisite Tree
+            </button>
         </div>
-        <button class="submitChoices" v-on:click="$emit('generate-tree', courseData, chosenCourses)">
-            Generate Prequisite Tree
-        </button>
     </div>
 </template>
 
 <script>
 import DropDown from "./DropDown";
-import CourseChoiceBox from '../components/CourseChoiceBox';
+import CourseBox from '../components/CourseBox';
 import axios from "axios"
 import TrieSearch from "trie-search";
 const UW_API_KEY = "ad7c8daa89f123ff2f7ee0c0a4678694";
@@ -35,7 +44,7 @@ export default {
     name: "SideBar",
     components: {
         DropDown: DropDown,
-        CourseChoiceBox: CourseChoiceBox,
+        CourseBox: CourseBox,
     },
     props: ["courseList"],
     data() {
@@ -43,6 +52,13 @@ export default {
             courseData: [],
             courseTrie: new TrieSearch(['name']),
             chosenCourses: new TrieSearch([['courseInfo', 'name']]),
+        }
+    },
+    computed: {
+        courseBoxList: function(){
+            return this.courseData.filter((course) => {
+                return this.chosenCourses.get(course.name)[0].chosenBy > 0 && course.parsedPrerequisites.length > 0;
+            });
         }
     },
     methods: {
@@ -170,14 +186,30 @@ export default {
 .choice-box {
     margin-top: 5px;
 }
-#sidebar {
-    background-color: #fff;
-    width: 30%;
-    height: 100%;
-    border-radius: 0.5rem;
-    box-shadow: 0 0 2px 2px #ededed;
+.sidebar-container {
     padding: 10px;
+}
+.submitChoices {
+    border-radius: 0.5rem;
+    border: 1px solid white;
+    padding: 5px;
     margin: 5px;
-    overflow-y: scroll;
+    flex-grow: 1;
+    font-size: 14px;
+    background-color: #26C281;
+    color: white;
+    
+}
+.submitChoices:focus {
+   outline: none;
+   box-shadow: none;
+}
+
+.course-choices {
+    display: flex;
+    flex-wrap: wrap;
+}
+.course-box {
+    flex-grow: 1;
 }
 </style>

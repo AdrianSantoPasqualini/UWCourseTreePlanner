@@ -83,7 +83,6 @@ export default {
 
 <style scoped>
 .chart {
-  margin-left: 10px;
-  width: 70%;
+  width: 0px;
 }
 </style>
