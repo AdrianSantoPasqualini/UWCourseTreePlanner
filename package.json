@@ -8,23 +8,25 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@amcharts/amcharts4": "^4.9.17",
+    "@amcharts/amcharts4": "^4.10.2",
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
     "trie-search": "^1.2.11",
-    "vue": "^2.6.11",
+    "vue": "^2.6.12",
     "vue-multiselect": "^2.1.6",
-    "vue-router": "^3.1.6"
+    "vue-router": "^3.4.3",
+    "vuex": "^3.5.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.3.0",
     "@vue/cli-plugin-eslint": "~4.3.0",
-    "@vue/cli-plugin-router": "^4.3.1",
+    "@vue/cli-plugin-router": "^4.5.4",
+    "@vue/cli-plugin-vuex": "^4.5.4",
     "@vue/cli-service": "~4.3.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
-    "vue-template-compiler": "^2.6.11"
+    "vue-template-compiler": "^2.6.12"
   },
   "eslintConfig": {
     "root": true,
